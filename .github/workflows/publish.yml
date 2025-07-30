@@ -1,0 +1,156 @@
+name: Publish to npm
+
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+    inputs:
+      release_type:
+        description: 'Release type'
+        required: true
+        default: 'patch'
+        type: choice
+        options:
+          - patch
+          - minor
+          - major
+          - prerelease
+
+jobs:
+  publish:
+    name: Publish to npm
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      with:
+        # Fetch full history for proper versioning
+        fetch-depth: 0
+        token: ${{ secrets.GITHUB_TOKEN }}
+        
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '20.x'
+        cache: 'npm'
+        registry-url: 'https://registry.npmjs.org'
+        
+    - name: Configure Git
+      run: |
+        git config --global user.name 'github-actions[bot]'
+        git config --global user.email 'github-actions[bot]@users.noreply.github.com'
+        
+    - name: Install dependencies
+      run: npm ci
+      
+    - name: Run tests
+      run: npm test
+      
+    - name: Run type checking
+      run: npm run typecheck
+      
+    - name: Run linting
+      run: npm run lint
+      
+    - name: Build project
+      run: npm run build
+      
+    - name: Version bump (manual dispatch)
+      if: github.event_name == 'workflow_dispatch'
+      run: |
+        npm version ${{ github.event.inputs.release_type }} --no-git-tag-version
+        echo "NEW_VERSION=$(node -p "require('./package.json').version")" >> $GITHUB_ENV
+        
+    - name: Get version from release (release event)
+      if: github.event_name == 'release'
+      run: |
+        # Extract version from release tag (remove 'v' prefix if present)
+        VERSION="${{ github.event.release.tag_name }}"
+        VERSION="${VERSION#v}"
+        echo "NEW_VERSION=$VERSION" >> $GITHUB_ENV
+        # Update package.json version to match release tag
+        npm version $VERSION --no-git-tag-version
+        
+    - name: Verify package integrity
+      run: |
+        # Check that all required files are included
+        npm pack --dry-run
+        
+        # Verify the built CLI works
+        node dist/cli.js --version
+        node dist/cli.js --help
+        
+    - name: Publish to npm (latest)
+      if: "!contains(env.NEW_VERSION, '-')"
+      run: npm publish --access public
+      env:
+        NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+        
+    - name: Publish to npm (prerelease)
+      if: "contains(env.NEW_VERSION, '-')"
+      run: npm publish --access public --tag next
+      env:
+        NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+        
+    - name: Create GitHub release (manual dispatch)
+      if: github.event_name == 'workflow_dispatch'
+      uses: actions/create-release@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        tag_name: v${{ env.NEW_VERSION }}
+        release_name: Release v${{ env.NEW_VERSION }}
+        body: |
+          Automated release v${{ env.NEW_VERSION }}
+          
+          ## Changes
+          See the full changelog at: https://github.com/${{ github.repository }}/compare/v${{ env.PREVIOUS_VERSION }}...v${{ env.NEW_VERSION }}
+          
+          ## Installation
+          ```bash
+          npm install -g gpx@${{ env.NEW_VERSION }}
+          ```
+          
+          ## Verification
+          ```bash
+          gpx --version
+          ```
+        draft: false
+        prerelease: ${{ contains(env.NEW_VERSION, '-') }}
+        
+    - name: Update repository (manual dispatch)
+      if: github.event_name == 'workflow_dispatch'
+      run: |
+        git add package.json package-lock.json
+        git commit -m "chore: bump version to v${{ env.NEW_VERSION }}"
+        git tag v${{ env.NEW_VERSION }}
+        git push origin main
+        git push origin v${{ env.NEW_VERSION }}
+        
+    - name: Post-publish verification
+      run: |
+        # Wait a bit for npm to process the package
+        sleep 30
+        
+        # Verify package is available on npm
+        npm view gpx@${{ env.NEW_VERSION }} version
+        
+        # Test installation from npm
+        npm install -g gpx@${{ env.NEW_VERSION }}
+        
+        # Verify global installation works
+        gpx --version
+        
+    - name: Notify on success
+      if: success()
+      run: |
+        echo "✅ Successfully published gpx@${{ env.NEW_VERSION }} to npm"
+        echo "📦 Package URL: https://www.npmjs.com/package/gpx"
+        echo "🏷️ Version: ${{ env.NEW_VERSION }}"
+        
+    - name: Notify on failure
+      if: failure()
+      run: |
+        echo "❌ Failed to publish gpx@${{ env.NEW_VERSION }} to npm"
+        echo "Please check the logs and try again"
