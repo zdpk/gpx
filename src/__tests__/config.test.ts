@@ -1,7 +1,6 @@
 import { ConfigManager } from '../config';
 import { promises as fs } from 'fs';
-import * as path from 'path';
-import * as os from 'os';
+
 
 // Mock fs for testing
 jest.mock('fs', () => ({
@@ -17,11 +16,8 @@ const mockFs = fs as jest.Mocked<typeof fs>;
 
 describe('ConfigManager', () => {
   let configManager: ConfigManager;
-  let tempDir: string;
-
   beforeEach(() => {
     jest.clearAllMocks();
-    tempDir = path.join(os.tmpdir(), 'gpx-test-config');
     configManager = new ConfigManager();
   });
 
@@ -156,7 +152,7 @@ network:
       const configPath = configManager.getConfigPath();
       expect(configPath).toContain('.config');
       expect(configPath).toContain('gpx');
-      expect(configPath).toEndWith('config.yml');
+      expect(configPath).toMatch(/config\.yml$/);
     });
   });
 });
