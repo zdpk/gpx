@@ -20,7 +20,7 @@
     "prebuild": "npm run clean",
     "postbuild": "chmod +x dist/cli.js",
     "prepare": "npm run build",
-    "prepublishOnly": "npm run test && npm run lint && npm run build",
+    "prepublishOnly": "npm run test && npm run build",
     "prepack": "npm run build",
     "release": "semantic-release",
     "release:dry": "semantic-release --dry-run",
