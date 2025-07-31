@@ -232,6 +232,9 @@ export class Downloader {
             if (process.platform !== 'win32') {
               if (stats.mode & parseInt('111', 8)) { // Check execute permissions
                 executables.push(fullPath);
+              } else { // If no execute permission, try to make it executable
+                await this.makeExecutable(fullPath);
+                executables.push(fullPath);
               }
             } else {
               // On Windows, check file extension
