@@ -258,12 +258,12 @@ gpx update [repo]     Update specific or all tools
 # Via npm (recommended)
 npm install -g gpx
 
-# Via script (direct)
-curl -sSL https://install.gpx.dev | sh
+# Via npx (no installation required)
+npx gpx owner/repo [args...]
 
-# Via package managers
-brew install gpx                # macOS
-winget install gpx             # Windows
+# Via package managers (future)
+# brew install gpx                # macOS (planned)
+# winget install gpx             # Windows (planned)
 ```
 
 #### 4.3.2 First-Run Experience

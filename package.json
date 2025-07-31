@@ -37,16 +37,16 @@
     "executor",
     "package-manager"
   ],
-  "author": "Your Name",
+  "author": "zdpk",
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/your-name/gpx.git"
+    "url": "https://github.com/zdpk/gpx.git"
   },
   "bugs": {
-    "url": "https://github.com/your-name/gpx/issues"
+    "url": "https://github.com/zdpk/gpx/issues"
   },
-  "homepage": "https://github.com/your-name/gpx#readme",
+  "homepage": "https://github.com/zdpk/gpx#readme",
   "dependencies": {
     "axios": "^1.6.2",
     "chalk": "^5.3.0",

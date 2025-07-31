@@ -37,9 +37,10 @@ gpx sharkdp/fd --type f
 npm install -g gpx
 ```
 
-### Via curl (Direct)
+### Via npx (No installation required)
 ```bash
-curl -sSL https://install.gpx.dev | sh
+# Run directly without installing
+npx gpx BurntSushi/ripgrep --version
 ```
 
 ## Usage
@@ -289,7 +290,7 @@ MIT License - see [LICENSE](LICENSE) file for details.
 
 ## Support
 
-- 📖 **Documentation**: [docs.gpx.dev](https://docs.gpx.dev)
-- 🐛 **Issues**: [GitHub Issues](https://github.com/your-name/gpx/issues)
-- 💬 **Discussions**: [GitHub Discussions](https://github.com/your-name/gpx/discussions)
+- 📖 **Documentation**: See README.md and DEPLOYMENT.md
+- 🐛 **Issues**: [GitHub Issues](https://github.com/zdpk/gpx/issues)
+- 💬 **Discussions**: [GitHub Discussions](https://github.com/zdpk/gpx/discussions)
 - 🔧 **Help**: `gpx --help`
