@@ -117,13 +117,13 @@ export class PlatformMatcher {
     let score = 0;
 
     // Check OS match
-    const osMatch = osPatterns.some(pattern => filename.includes(pattern.toLowerCase()));
+    const osMatch = osPatterns.some(pattern => filename.includes(pattern));
     if (!osMatch) return 0; // Must match OS
 
     score += 10; // Base score for OS match
 
     // Check architecture match
-    const archMatch = archPatterns.some(pattern => filename.includes(pattern.toLowerCase()));
+    const archMatch = archPatterns.some(pattern => filename.includes(pattern));
     if (archMatch) {
       score += 10;
     }
@@ -133,14 +133,11 @@ export class PlatformMatcher {
       score += 5;
     }
 
-    // Prefer specific formats
-    if (filename.endsWith('.tar.gz')) {
-      score += 2; // Slightly prefer tar.gz for Unix-like systems
-    }
+    
 
-    // Penalize checksums and signatures
-    if (filename.includes('sha256') || filename.includes('sig') || filename.includes('asc')) {
-      return 0;
+    // Prefer specific Windows MSVC builds
+    if (filename.includes('pc-windows-msvc')) {
+      score += 3;
     }
 
     // Penalize development/debug builds
@@ -158,13 +155,16 @@ export class PlatformMatcher {
     const platforms = new Set<string>();
 
     for (const asset of assets) {
-      const filename = asset.name.toLowerCase();
+      let filename = asset.name.toLowerCase();
       
       // Skip non-binary assets
       if (filename.includes('source') || filename.includes('sha256') || 
           filename.includes('sig') || filename.includes('asc')) {
         continue;
       }
+
+      // Remove common file extensions
+      filename = filename.replace(/\.(tar\.gz|zip|tgz|gz|exe|dmg|deb|rpm|msi|pkg)$/, '');
 
       // Extract platform information
       const parts = filename.split(/[-_]/);

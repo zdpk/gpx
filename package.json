@@ -1,6 +1,6 @@
 {
   "name": "gpx",
-  "version": "0.1.0",
+  "version": "0.0.1",
   "description": "GitHub Package eXecutor - Run GitHub release binaries directly",
   "main": "dist/index.js",
   "bin": {
