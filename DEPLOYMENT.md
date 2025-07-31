@@ -68,7 +68,23 @@ chore: update dependencies
 
 ### 2. Manual Releases
 
-#### Using GitHub Actions Workflow
+#### Method 1: Version Tags (Recommended)
+
+```bash
+# Create and push version tag - triggers automatic npm publish
+git tag v0.1.0
+git push origin v0.1.0
+
+# Or use npm version command (automatically creates tag)
+npm version patch   # Creates v0.1.1
+npm version minor   # Creates v0.2.0  
+npm version major   # Creates v1.0.0
+
+# Push the tag to trigger deployment
+git push origin main --follow-tags
+```
+
+#### Method 2: GitHub Actions Workflow
 
 1. Go to **Actions** tab in GitHub
 2. Select **"Publish to npm"** workflow
@@ -76,24 +92,13 @@ chore: update dependencies
 4. Choose release type: `patch`, `minor`, `major`, or `prerelease`
 5. Click **"Run workflow"**
 
-#### Using Release Script
+#### Method 3: GitHub Releases
 
-```bash
-# Prepare and validate release
-npm run prepare-release
-
-# Create patch release
-npm run version:patch
-
-# Create minor release  
-npm run version:minor
-
-# Create major release
-npm run version:major
-
-# Push changes
-git push origin main --follow-tags
-```
+1. Go to **Releases** tab in GitHub
+2. Click **"Create a new release"**
+3. Tag version: `v1.0.0` (creates tag automatically)
+4. Fill release title and description
+5. Click **"Publish release"** (triggers automatic npm publish)
 
 ### 3. Emergency Releases
 

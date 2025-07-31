@@ -1,5 +1,5 @@
 import axios, { AxiosInstance, AxiosResponse } from 'axios';
-import { GitHubRelease, GitHubAsset } from './types.js';
+import { GitHubRelease } from './types.js';
 
 export class GitHubClient {
   private client: AxiosInstance;

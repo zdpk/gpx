@@ -23,7 +23,7 @@ export interface BinaryMetadata {
   platform: Platform;
   binaryPath: string;
   installDate: string;
-  checksum?: string;
+  checksum?: string | undefined;
 }
 
 export interface CacheEntry {

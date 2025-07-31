@@ -1,5 +1,4 @@
 import { spawn, SpawnOptions } from 'child_process';
-import * as path from 'path';
 
 export interface ExecutionOptions {
   args: string[];

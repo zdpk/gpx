@@ -61,12 +61,12 @@ export class GPXRunner {
 
     // Check cache first (unless --no-cache or --update)
     if (!options.noCache && !options.update) {
-      binaryPath = await this.getCachedBinary(fullRepo, platform, options.verbose);
+      binaryPath = await this.getCachedBinary(fullRepo, platform, Boolean(options.verbose));
     }
 
     // Download if not cached or update requested
     if (!binaryPath) {
-      binaryPath = await this.downloadAndCache(fullRepo, platform, options.verbose);
+      binaryPath = await this.downloadAndCache(fullRepo, platform, Boolean(options.verbose));
     }
 
     // Execute the binary

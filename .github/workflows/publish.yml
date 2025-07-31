@@ -1,6 +1,9 @@
 name: Publish to npm
 
 on:
+  push:
+    tags:
+      - 'v*'        # Trigger on version tags like v1.0.0, v0.1.0-beta, etc.
   release:
     types: [published]
   workflow_dispatch:
@@ -34,6 +37,7 @@ jobs:
       with:
         node-version: '20.x'
         cache: 'npm'
+        cache-dependency-path: package-lock.json
         registry-url: 'https://registry.npmjs.org'
         
     - name: Configure Git
@@ -56,21 +60,33 @@ jobs:
     - name: Build project
       run: npm run build
       
-    - name: Version bump (manual dispatch)
-      if: github.event_name == 'workflow_dispatch'
+    - name: Extract version from tag or release
       run: |
-        npm version ${{ github.event.inputs.release_type }} --no-git-tag-version
-        echo "NEW_VERSION=$(node -p "require('./package.json').version")" >> $GITHUB_ENV
+        if [[ "${{ github.event_name }}" == "push" && "${{ github.ref }}" == refs/tags/* ]]; then
+          # Extract version from pushed tag
+          VERSION="${{ github.ref_name }}"
+          VERSION="${VERSION#v}"
+          echo "NEW_VERSION=$VERSION" >> $GITHUB_ENV
+          echo "TRIGGER_TYPE=tag" >> $GITHUB_ENV
+          # Update package.json version to match tag
+          npm version $VERSION --no-git-tag-version
+        elif [[ "${{ github.event_name }}" == "release" ]]; then
+          # Extract version from release
+          VERSION="${{ github.event.release.tag_name }}"
+          VERSION="${VERSION#v}"
+          echo "NEW_VERSION=$VERSION" >> $GITHUB_ENV
+          echo "TRIGGER_TYPE=release" >> $GITHUB_ENV
+          # Update package.json version to match release tag
+          npm version $VERSION --no-git-tag-version
+        elif [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
+          # Manual dispatch - create new version
+          npm version ${{ github.event.inputs.release_type }} --no-git-tag-version
+          echo "NEW_VERSION=$(node -p "require('./package.json').version")" >> $GITHUB_ENV
+          echo "TRIGGER_TYPE=manual" >> $GITHUB_ENV
+        fi
         
-    - name: Get version from release (release event)
-      if: github.event_name == 'release'
-      run: |
-        # Extract version from release tag (remove 'v' prefix if present)
-        VERSION="${{ github.event.release.tag_name }}"
-        VERSION="${VERSION#v}"
-        echo "NEW_VERSION=$VERSION" >> $GITHUB_ENV
-        # Update package.json version to match release tag
-        npm version $VERSION --no-git-tag-version
+        echo "Publishing version: $NEW_VERSION"
+        echo "Trigger type: $TRIGGER_TYPE"
         
     - name: Verify package integrity
       run: |
@@ -93,8 +109,8 @@ jobs:
       env:
         NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
         
-    - name: Create GitHub release (manual dispatch)
-      if: github.event_name == 'workflow_dispatch'
+    - name: Create GitHub release (manual dispatch only)
+      if: env.TRIGGER_TYPE == 'manual'
       uses: actions/create-release@v1
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -105,7 +121,7 @@ jobs:
           Automated release v${{ env.NEW_VERSION }}
           
           ## Changes
-          See the full changelog at: https://github.com/${{ github.repository }}/compare/v${{ env.PREVIOUS_VERSION }}...v${{ env.NEW_VERSION }}
+          See the full changelog at: https://github.com/${{ github.repository }}/commits/v${{ env.NEW_VERSION }}
           
           ## Installation
           ```bash
@@ -119,8 +135,8 @@ jobs:
         draft: false
         prerelease: ${{ contains(env.NEW_VERSION, '-') }}
         
-    - name: Update repository (manual dispatch)
-      if: github.event_name == 'workflow_dispatch'
+    - name: Update repository (manual dispatch only)
+      if: env.TRIGGER_TYPE == 'manual'
       run: |
         git add package.json package-lock.json
         git commit -m "chore: bump version to v${{ env.NEW_VERSION }}"

@@ -158,6 +158,17 @@ gpx sharkdp/bat file.txt                    # Better cat
 gpx dandavison/delta file1 file2            # Better diff
 ```
 
+### Quick Start Examples
+```bash
+# Install GPX
+npm install -g gpx
+
+# Try some popular tools immediately
+gpx BurntSushi/ripgrep --version
+gpx sharkdp/bat --help
+gpx sharkdp/fd --type f --name "*.ts"
+```
+
 ### System Administration
 ```bash
 # Network tools
