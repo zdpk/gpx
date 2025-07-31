@@ -129,12 +129,12 @@ jobs:
           
           ## Installation
           ```bash
-          npm install -g gpx@${{ env.NEW_VERSION }}
+          npm install -g @zdpk/gpx@${{ env.NEW_VERSION }}
           ```
           
           ## Verification
           ```bash
-          gpx --version
+          @zdpk/gpx --version
           ```
         draft: false
         prerelease: ${{ contains(env.NEW_VERSION, '-') }}
@@ -154,10 +154,10 @@ jobs:
         sleep 30
         
         # Verify package is available on npm
-        npm view gpx@${{ env.NEW_VERSION }} version
+        npm view @zdpk/gpx@${{ env.NEW_VERSION }} version
         
         # Test installation from npm
-        npm install -g gpx@${{ env.NEW_VERSION }}
+        npm install -g @zdpk/gpx@${{ env.NEW_VERSION }}
         
         # Verify global installation works
         gpx --version
