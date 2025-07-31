@@ -1,5 +1,5 @@
 {
-  "name": "gpx",
+  "name": "@zdpk/gpx",
   "version": "0.0.1",
   "description": "GitHub Package eXecutor - Run GitHub release binaries directly",
   "main": "dist/index.js",
