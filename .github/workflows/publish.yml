@@ -68,7 +68,12 @@ jobs:
           echo "NEW_VERSION=$VERSION" >> $GITHUB_ENV
           echo "TRIGGER_TYPE=tag" >> $GITHUB_ENV
           # Update package.json version to match tag
-          npm version $VERSION --no-git-tag-version
+          CURRENT_PACKAGE_VERSION=$(node -p "require('./package.json').version")
+          if [ "$CURRENT_PACKAGE_VERSION" != "$VERSION" ]; then
+            npm version $VERSION --no-git-tag-version
+          else
+            echo "Package version is already $VERSION. No change needed."
+          fi
         elif [[ "${{ github.event_name }}" == "release" ]]; then
           # Extract version from release
           VERSION="${{ github.event.release.tag_name }}"
