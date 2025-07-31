@@ -140,6 +140,16 @@ export class PlatformMatcher {
       score += 3;
     }
 
+    // Prefer musl builds on Linux for better compatibility
+    if (filename.includes('linux') && filename.includes('musl')) {
+      score += 5;
+    }
+
+    // Penalize Android builds on regular Linux
+    if (filename.includes('linux') && filename.includes('android')) {
+      score -= 3;
+    }
+
     // Penalize development/debug builds
     if (filename.includes('debug') || filename.includes('dev')) {
       score -= 5;

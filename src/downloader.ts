@@ -130,7 +130,7 @@ export class Downloader {
     await tar.extract({
       file: archivePath,
       cwd: destDir,
-      strip: 1, // Remove top-level directory
+      // Don't strip directories - some archives like zoxide are flat
     });
   }
 
@@ -217,6 +217,19 @@ export class Downloader {
   async findExecutables(dir: string): Promise<string[]> {
     const executables: string[] = [];
     
+    console.log(`Scanning directory for executables: ${dir}`);
+    
+    // Debug: show all files in the directory
+    try {
+      const allFiles = await fs.readdir(dir, { withFileTypes: true });
+      console.log('All files in directory:');
+      allFiles.forEach(file => {
+        console.log(`  ${file.isDirectory() ? 'DIR' : 'FILE'}: ${file.name}`);
+      });
+    } catch (e) {
+      console.log('Error listing directory:', e);
+    }
+    
     const scan = async (currentDir: string): Promise<void> => {
       const entries = await fs.readdir(currentDir, { withFileTypes: true });
       
@@ -228,17 +241,39 @@ export class Downloader {
         } else if (entry.isFile()) {
           try {
             const stats = await fs.stat(fullPath);
+            const ext = path.extname(fullPath).toLowerCase();
+            const basename = path.basename(fullPath).toLowerCase();
+            
+            console.log(`Checking file: ${entry.name} (ext: ${ext})`);
+            
             // Check if file is executable (Unix permissions)
             if (process.platform !== 'win32') {
+              // Skip obviously non-executable files
+              if (ext === '.md' || ext === '.txt' || ext === '.json' || ext === '.yml' || ext === '.yaml' || 
+                  ext === '.xml' || ext === '.html' || ext === '.css' || ext === '.js' || ext === '.ts' ||
+                  ext === '.py' || ext === '.sh' || ext === '.bash' || ext === '.fish' || ext === '.zsh' ||
+                  ext === '.1' || ext === '.2' || ext === '.3' || ext === '.4' || ext === '.5' ||
+                  basename.startsWith('readme') || basename.startsWith('license') || 
+                  basename.startsWith('changelog') || basename.startsWith('copying')) {
+                console.log(`Skipping non-executable file: ${entry.name}`);
+                continue;
+              }
+              
               if (stats.mode & parseInt('111', 8)) { // Check execute permissions
+                console.log(`Found executable (has permissions): ${entry.name}`);
                 executables.push(fullPath);
-              } else { // If no execute permission, try to make it executable
-                await this.makeExecutable(fullPath);
-                executables.push(fullPath);
+              } else {
+                // Only make potentially executable files executable (binaries without extension)
+                if (ext === '' || ext === '.bin') {
+                  console.log(`Making executable: ${entry.name}`);
+                  await this.makeExecutable(fullPath);
+                  executables.push(fullPath);
+                } else {
+                  console.log(`Skipping file without execute permission: ${entry.name}`);
+                }
               }
             } else {
               // On Windows, check file extension
-              const ext = path.extname(fullPath).toLowerCase();
               if (ext === '.exe' || ext === '.bat' || ext === '.cmd') {
                 executables.push(fullPath);
               }

@@ -1,0 +1,31 @@
+services:
+  gpx:
+    build: .
+    container_name: gpx-test
+    volumes:
+      # Mount current directory for development
+      - .:/app
+      # Mount cache directory for gpx downloads
+      - gpx-cache:/home/gpx/.cache/gpx
+    environment:
+      - NODE_ENV=development
+    # Override entrypoint for interactive testing
+    entrypoint: ["/bin/sh"]
+    stdin_open: true
+    tty: true
+    working_dir: /app
+    user: gpx
+
+  # Alternative service for running tests
+  gpx-test:
+    build: .
+    container_name: gpx-test-runner
+    volumes:
+      - .:/app
+      - gpx-cache:/home/gpx/.cache/gpx
+    environment:
+      - NODE_ENV=test
+    command: ["npm", "test"]
+
+volumes:
+  gpx-cache:

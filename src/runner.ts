@@ -191,6 +191,13 @@ export class GPXRunner {
     // Find executable
     const executables = await this.downloader.findExecutables(extractDir);
     
+    if (verbose) {
+      console.log(chalk.blue(`Found ${executables.length} executable(s):`));
+      executables.forEach(exe => {
+        console.log(chalk.blue(`  - ${path.basename(exe)}`));
+      });
+    }
+    
     if (executables.length === 0) {
       throw new Error('No executable files found in archive');
     }
@@ -234,9 +241,30 @@ export class GPXRunner {
       return executables[0];
     }
 
-    // Prefer executable that matches repo name
+    // Prefer executable that matches repo name exactly (not prefixed with underscore)
     for (const exe of executables) {
-      const baseName = path.basename(exe, path.extname(exe));
+      const ext = path.extname(exe);
+      const baseName = path.basename(exe, ext);
+      if (baseName.toLowerCase() === repoName.toLowerCase() && ext === '' && !baseName.startsWith('_')) {
+        return exe;
+      }
+    }
+
+    // Then prefer executable that matches repo name and has no extension (likely the main binary)
+    for (const exe of executables) {
+      const ext = path.extname(exe);
+      const baseName = path.basename(exe, ext);
+      if (baseName.toLowerCase() === repoName.toLowerCase() && ext === '') {
+        return exe;
+      }
+    }
+
+    // Prefer executable that matches repo name and is not a man page or script/source file
+    for (const exe of executables) {
+      const ext = path.extname(exe);
+      if (ext === '.1' || ext === '.bash' || ext === '.fish' || ext === '.zsh' || ext === '.elv' || ext === '.nu' || ext === '.ts' || ext === '.md') continue; // Skip man pages, shell scripts, TypeScript source files, and markdown files
+
+      const baseName = path.basename(exe, ext);
       if (baseName.toLowerCase() === repoName.toLowerCase()) {
         return exe;
       }
