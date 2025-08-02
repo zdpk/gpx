@@ -15,4 +15,7 @@ export type {
   BinaryMetadata,
   CacheEntry,
   Config,
+  Registry,
+  RegistryEntry,
+  PackageInfo,
 } from './types.js';
