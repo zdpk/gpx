@@ -6,6 +6,7 @@ export { Downloader } from './downloader.js';
 export { CacheManager } from './cache.js';
 export { BinaryExecutor } from './executor.js';
 export { ConfigManager } from './config.js';
+export { RegistryManager } from './registry.js';
 
 // Type exports
 export type {
