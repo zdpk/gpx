@@ -32,6 +32,30 @@ export interface CacheEntry {
   usageCount: number;
 }
 
+export interface RegistryEntry {
+  repo: string;
+  binaryName: string;
+  version: string;
+  installDate: string;
+  lastUsed: string;
+  platform: Platform;
+}
+
+export interface Registry {
+  version: string;
+  entries: Record<string, RegistryEntry>;
+  lastUpdated: string;
+}
+
+export interface PackageInfo {
+  repo: string;
+  binaryName: string;
+  version: string;
+  description?: string;
+  stars?: number;
+  lastRelease?: string;
+}
+
 export interface Config {
   cache: {
     maxVersionsPerRepo: number;
